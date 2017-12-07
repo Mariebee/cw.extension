@@ -3,7 +3,7 @@ var express = require('express')
 , http = require('http')
 , util = require('util')
 , Promise = require('promise')
-//, Database = require('./js/database.js')
+, Database = require('./public/js/database.js')
 , path = require('path');
 
 var app = express();
@@ -33,10 +33,23 @@ app.route('/main')
     let bodyHtml = req.body.html;
     if(undefined != bodyHtml
       && null != bodyHtml
-      && '' != bodyHtml)
+      && '' != bodyHtml) {
         htmlData.push(bodyHtml);
-
-
+        console.log('selected content ' + bodyHtml);
+        var database = new Database();
+        const query = 'insert into sys.select_content (content, user, cre_time) values(?,?,current_date());';
+        var args = [bodyHtml, 'zktewfm'];
+        database.query(query, args).then( rows => {
+            if(0 === rows.length) {
+              database.close();
+              console.log('insert failed');
+            }
+        }).then(() => {
+          database.close().then(() => {
+            console.log('record inserted!');
+          });
+        });
+      }
     //console.log(htmlData);
     //res.sendFile(__dirname + '/main.html');
     res.writeHead(200, {'Content-Type': 'text/plain'});
@@ -46,8 +59,18 @@ app.route('/main')
 
   app.get('/getHtmlData', function (req, res) {
     res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.write(JSON.stringify(htmlData));
-    res.end();
+    var database = new Database();
+    const query = 'select * from select_content';
+    var args = [];
+    database.query(query, args).then( rows => {
+      res.write(JSON.stringify(rows));
+    }).then(() => {
+      database.close().then(() => {
+        res.end();
+      });
+    });
+    //res.write(JSON.stringify(htmlData));
+    //res.end();
   });
 
 app.get('/getUserName', function (req, res) {
