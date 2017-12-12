@@ -19,14 +19,24 @@ app.use('/img',express.static(path.join(__dirname, '/public/images')));
 app.use('/css',express.static(path.join(__dirname, '/public/css')));
 app.use('/js',express.static(path.join(__dirname, '/public/js')));
 
+app.use('/img1',express.static(path.join(__dirname, '/media/images')));
+app.use('/css1',express.static(path.join(__dirname, '/media/css')));
+app.use('/js1',express.static(path.join(__dirname, '/media/js')));
+
 app.get('/', function (req, res) {
+  /*var database = new Database();
+  const query = 'delete from select_content where content_id > ?';
+  var args = ['42'];
+  database.query(query, args).then(() => {
+    console.log('record inserted!');
+  });*/
   res.sendFile(__dirname + '/content.html');
 });
 
-app.route('/main')
+app.route('/content')
   .get(function (req, res) {
     //console.log('getMethod '+htmlData[0]);
-    res.sendFile(__dirname + '/main.html');
+    res.sendFile(__dirname + '/content.html');
   })
   .post(function (req, res) {
     //console.log(req.body.html);
