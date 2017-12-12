@@ -7,7 +7,7 @@ var express = require('express')
 , path = require('path');
 
 var app = express();
-var htmlData = [];
+//var htmlData = [];
 
 //support parsing of application/json type post data
 app.use(bodyParser.json());
@@ -20,7 +20,7 @@ app.use('/css',express.static(path.join(__dirname, '/public/css')));
 app.use('/js',express.static(path.join(__dirname, '/public/js')));
 
 app.get('/', function (req, res) {
-  res.sendFile(__dirname + '/main.html');
+  res.sendFile(__dirname + '/content.html');
 });
 
 app.route('/main')
@@ -29,24 +29,29 @@ app.route('/main')
     res.sendFile(__dirname + '/main.html');
   })
   .post(function (req, res) {
-    console.log(req.body.html);
+    //console.log(req.body.html);
     let bodyHtml = req.body.html;
     if(undefined != bodyHtml
       && null != bodyHtml
       && '' != bodyHtml) {
-        htmlData.push(bodyHtml);
-        console.log('selected content ' + bodyHtml);
+        //htmlData.push(bodyHtml);
+        //console.log('selected content ' + bodyHtml);
         var database = new Database();
-        const query = 'insert into sys.select_content (content, user, cre_time) values(?,?,current_date());';
-        var args = [bodyHtml, 'zktewfm'];
-        database.query(query, args).then( rows => {
-            if(0 === rows.length) {
-              database.close();
-              console.log('insert failed');
-            }
+        const checkDuplicateQuery = 'select * from select_content where content=?';
+        var checkDuplicateArgs = [bodyHtml];
+        database.query(checkDuplicateQuery, checkDuplicateArgs).then( rows => {
+          if(rows.length > 0) {
+            console.log('Content already exists');
+          } else {
+            const query = 'insert into sys.select_content (content, user, cre_time) values(?,?,now());';
+            var args = [bodyHtml, 'zktewfm'];
+            database.query(query, args).then(() => {
+              console.log('record inserted!');
+            });
+          }
         }).then(() => {
           database.close().then(() => {
-            console.log('record inserted!');
+            res.end();
           });
         });
       }
