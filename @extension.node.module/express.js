@@ -33,6 +33,18 @@ app.get('/', function (req, res) {
   res.sendFile(__dirname + '/content.html');
 });
 
+app.post('/delete', function (req, res) {
+  let content_id = req.body.id;
+  var database = new Database();
+  const query = 'delete from select_content where content_id = ?';
+  var args = [content_id];
+  database.query(query, args).then(() => {
+    console.log('record deleted!');
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end();
+  });
+});
+
 app.route('/content')
   .get(function (req, res) {
     //console.log('getMethod '+htmlData[0]);
